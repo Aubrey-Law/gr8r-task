@@ -4,6 +4,14 @@ import { ic } from '../core/icons.js';
 import { D, S, mem, task } from '../core/store.js';
 import { FT, av, empty, filePrev, fileType } from '../ui/helpers.js';
 
+const SOURCES = [
+  ['office', 'This office'],
+  ['client', 'Client'],
+  ['court', 'Court'],
+];
+const sourceName = id => SOURCES.find(s => s[0] === id)?.[1] || 'This office';
+const fileFlags = f =>
+  `<span class="row" style="gap:6px;margin-top:6px"><select class="select" style="height:24px;width:auto;font-size:11.5px" data-in="fileMeta" data-f="source" data-id="${f.id}" aria-label="Document source">${SOURCES.map(([id, name]) => `<option value="${id}" ${(f.source || 'office') === id ? 'selected' : ''}>${name}</option>`).join('')}</select><label class="row" style="gap:4px;font-size:12px;color:var(--text-2)"><input type="checkbox" data-in="fileMeta" data-f="signed" data-id="${f.id}" ${f.signed ? 'checked' : ''} aria-label="Signed">${f.signed ? 'Signed' : 'Not signed'}</label></span>`;
 export function filesHtml(pid) {
   const u = S.ui;
   const q = (u.fileQ || '').toLowerCase();
@@ -14,7 +22,7 @@ export function filesHtml(pid) {
   const ups = (u.uploads || []).filter(x => x.project === pid);
   const view = u.fileView;
   return `<div class="toolbar">
-      <div class="inwrap">${ic('search', 13)}<input class="input search-sm" id="file-q" data-in="fileQ" placeholder="Search files" value="${esc(u.fileQ || '')}" aria-label="Search files"></div>
+      <div class="inwrap">${ic('search', 13)}<input class="input search-sm" id="file-q" data-in="fileQ" placeholder="Search documents" value="${esc(u.fileQ || '')}" aria-label="Search documents"></div>
       <select class="select" style="height:26px;width:auto;font-size:12px" data-in="fileType" aria-label="Filter by type"><option value="all">All types</option>${Object.entries(
         FT,
       )
@@ -45,12 +53,12 @@ export function filesHtml(pid) {
           ? empty(
               q || ft !== 'all' ? 'search-x' : 'folder-open',
               q || ft !== 'all' ? 'No results found' : 'No files yet',
-              q || ft !== 'all' ? 'No files match your search.' : 'Upload designs, documents, and assets to share them with the project.',
+              q || ft !== 'all' ? 'No files match your search.' : 'Document names live here. The file itself is not stored in this browser copy.',
               '',
             )
           : view === 'grid'
-            ? `<div class="fgrid">${fs.map(f => `<div class="fcard" data-ctx="file" data-id="${f.id}" data-a="previewFile" role="button" tabindex="0">${filePrev(f)}<div class="fi"><span class="fn trunc">${esc(f.name)}</span><span class="fm">${f.size} · ${esc(mem(f.by)?.name.split(' ')[0])} · ${ago(f.at)}</span></div><button class="ibtn ibtn-xs more" data-a="ctxBtn" data-ctx="file" data-id="${f.id}" aria-label="File options">${ic('ellipsis', 13)}</button></div>`).join('')}</div>`
-            : `<div class="panel" style="overflow-x:auto"><table class="perm-t" style="min-width:680px"><thead><tr><th style="padding-left:14px">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Size</th><th style="text-align:left">Uploaded by</th><th style="text-align:left">Date</th><th></th></tr></thead><tbody>${fs.map(f => `<tr data-ctx="file" data-id="${f.id}"><td style="padding-left:14px"><span class="row"><span class="ftype" style="--c:${FT[f.type].c}">${ic(FT[f.type].i, 14)}</span><span style="font-weight:500">${esc(f.name)}</span>${f.task && task(f.task) ? `<button class="badge" data-a="openTask" data-id="${f.task}">${ic('link', 10)}${task(f.task).key}</button>` : ''}</span></td><td style="text-align:left" class="muted">${FT[f.type].n}</td><td style="text-align:left" class="num muted">${f.size}</td><td style="text-align:left"><span class="row">${av(f.by, 'sm', false)}${esc(mem(f.by)?.name)}</span></td><td style="text-align:left" class="muted">${ago(f.at)}</td><td><button class="ibtn ibtn-sm" data-a="ctxBtn" data-ctx="file" data-id="${f.id}" aria-label="File options">${ic('ellipsis', 14)}</button></td></tr>`).join('')}</tbody></table></div>`
+            ? `<div class="fgrid">${fs.map(f => `<div class="fcard" data-ctx="file" data-id="${f.id}" data-a="previewFile" role="button" tabindex="0">${filePrev(f)}<div class="fi"><span class="fn trunc">${esc(f.name)}</span><span class="fm">${f.size} · ${esc(sourceName(f.source))} · ${f.signed ? 'Signed' : 'Not signed'}</span>${fileFlags(f)}</div><button class="ibtn ibtn-xs more" data-a="ctxBtn" data-ctx="file" data-id="${f.id}" aria-label="File options">${ic('ellipsis', 13)}</button></div>`).join('')}</div>`
+            : `<div class="panel" style="overflow-x:auto"><table class="perm-t" style="min-width:680px"><thead><tr><th style="padding-left:14px">Name</th><th style="text-align:left">Type</th><th style="text-align:left">Size</th><th style="text-align:left">Uploaded by</th><th style="text-align:left">Date</th><th style="text-align:left">Source</th><th></th></tr></thead><tbody>${fs.map(f => `<tr data-ctx="file" data-id="${f.id}"><td style="padding-left:14px"><span class="row"><span class="ftype" style="--c:${FT[f.type].c}">${ic(FT[f.type].i, 14)}</span><span style="font-weight:500">${esc(f.name)}</span>${f.task && task(f.task) ? `<button class="badge" data-a="openTask" data-id="${f.task}">${ic('link', 10)}${task(f.task).key}</button>` : ''}</span></td><td style="text-align:left" class="muted">${FT[f.type].n}</td><td style="text-align:left" class="num muted">${f.size}</td><td style="text-align:left"><span class="row">${av(f.by, 'sm', false)}${esc(mem(f.by)?.name)}</span></td><td style="text-align:left" class="muted">${ago(f.at)}</td><td>${fileFlags(f)}</td><td><button class="ibtn ibtn-sm" data-a="ctxBtn" data-ctx="file" data-id="${f.id}" aria-label="File options">${ic('ellipsis', 14)}</button></td></tr>`).join('')}</tbody></table></div>`
       }
     </div>`;
 }

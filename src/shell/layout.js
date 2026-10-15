@@ -2,7 +2,7 @@
 import { MOD, TODAY, diffD, esc, parse } from '../core/utils.js';
 import { ic, wsLogo } from '../core/icons.js';
 import { PSTAT } from '../core/constants.js';
-import { D, S, allTasks, mem, pColor, proj, team, teamsList, visibleProjects } from '../core/store.js';
+import { D, S, allTasks, mem, pColor, proj, team, visibleProjects } from '../core/store.js';
 import { av } from '../ui/helpers.js';
 import { ROUTE_NAMES } from './render.js';
 import { skeleton } from './skeletons.js';
@@ -78,8 +78,6 @@ export function sItem(route, label, icon, opt = {}) {
 export function renderSidebar() {
   const u = S.ui,
     d = D();
-  const unreadInbox = d.notifs.filter(n => !n.read && n.type !== 'update').length;
-  const unreadAll = d.notifs.filter(n => !n.read).length;
   const myOpen = allTasks().filter(t => t.assignee === d.me && t.status !== 'done' && t.due && diffD(parse(t.due), TODAY) <= 0).length;
   const projs = visibleProjects().filter(p => p.status !== 'complete');
   const inProj = u.route === 'project' ? u.params.id : null;
@@ -97,22 +95,15 @@ export function renderSidebar() {
     <div class="side-scroll" data-keep="side">
       ${u.collapsed ? `<button class="sitem" data-a="toggleSide" data-tip="Expand sidebar" data-tip-pos="right" aria-label="Expand sidebar">${ic('panel-left', 16)}</button>` : ''}
       ${sItem('home', 'Home', 'house')}
-      ${sItem('inbox', 'Inbox', 'inbox', { ct: unreadInbox || '', dot: true })}
-      ${sItem('mytasks', 'My Tasks', 'circle-check', { ct: myOpen || '' })}
-      ${sItem('favorites', 'Favorites', 'star')}
-      ${sItem('notifications', 'Notifications', 'bell', { ct: unreadAll || '' })}
+      ${sItem('mytasks', 'My work', 'circle-check', { ct: myOpen || '' })}
       <div class="sgroup">
-        <div class="sgroup-h">Workspace</div>
-        ${sItem('overview', 'Overview', 'layout-dashboard')}
-        ${sItem('projects', 'Projects', 'folder-kanban')}
-        ${sItem('tasks', 'Tasks', 'list-checks')}
-        ${sItem('calendar', 'Calendar', 'calendar')}
-        ${sItem('timeline', 'Timeline', 'chart-gantt')}
-        ${sItem('members', 'Members', 'users')}
+        <div class="sgroup-h">Practice</div>
+        ${sItem('projects', 'Matters', 'folder-kanban')}
+        ${sItem('calendar', 'Deadlines', 'calendar')}
         ${sItem('activity', 'Activity', 'activity')}
       </div>
       <div class="sgroup" id="side-projects">
-        <div class="sgroup-h"><span>Projects</span><span class="sp"></span><button class="ibtn ibtn-xs" data-a="newProject" data-tip="New project  P" aria-label="New project">${ic('plus', 14)}</button></div>
+        <div class="sgroup-h"><span>Matters</span><span class="sp"></span><button class="ibtn ibtn-xs" data-a="newProject" data-tip="New matter  P" aria-label="New matter">${ic('plus', 14)}</button></div>
         ${projs
           .map(p => {
             const open = !!u.expanded[p.id];
@@ -124,14 +115,15 @@ export function renderSidebar() {
               ${p.fav ? `<span class="fav">${ic('star', 11)}</span>` : ''}
               ${p.private ? `<span class="faint" style="margin-left:4px">${ic('lock', 11)}</span>` : ''}
               <span class="sdot" style="background:${PSTAT[p.status].c}" title="${PSTAT[p.status].name}"></span>
-              <span class="hov"><span class="ibtn ibtn-xs" data-a="ctxBtn" data-ctx="project" data-id="${p.id}" aria-label="Project options">${ic('ellipsis', 14)}</span><span class="ibtn ibtn-xs" data-a="toggleExpand" data-id="${p.id}" aria-label="Expand">${ic('chevron-right', 13, 'chev ' + (open ? 'open' : ''))}</span></span>
+              <span class="hov"><span class="ibtn ibtn-xs" data-a="ctxBtn" data-ctx="project" data-id="${p.id}" aria-label="Matter options">${ic('ellipsis', 14)}</span><span class="ibtn ibtn-xs" data-a="toggleExpand" data-id="${p.id}" aria-label="Expand">${ic('chevron-right', 13, 'chev ' + (open ? 'open' : ''))}</span></span>
             </div>
             <div class="sub ${open && !u.collapsed ? 'open' : ''}">
               ${[
-                ['board', 'Board', 'square-kanban'],
-                ['list', 'List', 'list'],
-                ['timeline', 'Timeline', 'chart-gantt'],
-                ['files', 'Files', 'paperclip'],
+                ['overview', 'Overview', 'layout-dashboard'],
+                ['list', 'Checklist', 'list'],
+                ['calendar', 'Deadlines', 'calendar'],
+                ['files', 'Documents', 'paperclip'],
+                ['activity', 'Activity', 'activity'],
               ]
                 .map(
                   ([tab, n, i]) =>
@@ -143,12 +135,6 @@ export function renderSidebar() {
           })
           .join('')}
         ${sItem('archive', 'Archive', 'archive', { ct: D().tasks.filter(t => t.archived).length + D().projects.filter(p => p.archived).length || '' })}
-      </div>
-      <div class="sgroup">
-        <div class="sgroup-h"><span>Teams</span><span class="sp"></span><button class="ibtn ibtn-xs" data-a="newTeam" data-tip="New team" aria-label="New team">${ic('plus', 14)}</button></div>
-        ${teamsList()
-          .map(t => sItem('team', t.name, t.icon, { id: t.id }))
-          .join('')}
       </div>
     </div>
     <div class="side-bot">
@@ -166,7 +152,7 @@ export function crumbs() {
   const c = (label, act = '', cur = false, icon = '') => `<button class="${cur ? 'cur' : ''}" ${act}>${icon}${esc(label)}</button>`;
   if (r === 'project') {
     const p = proj(u.params.id);
-    out.push(c('Projects', 'data-a="go" data-r="projects"'));
+    out.push(c('Matters', 'data-a="go" data-r="projects"'));
     if (p)
       out.push(
         c(
@@ -194,18 +180,16 @@ export function renderTopbar() {
     <nav class="crumbs trunc" aria-label="Breadcrumb">${crumbs()}</nav>
     <span class="sp"></span>
     <button class="topsearch" data-a="openPalette" aria-label="Search and commands">${ic('search', 14)}<span class="lbltxt">Search or jump to…</span><span class="kbd">${MOD}K</span></button>
-    <button class="ibtn" data-a="go" data-r="notifications" data-tip="Notifications" aria-label="Notifications">${ic('bell', 16)}${D().notifs.some(n => !n.read) ? '<span style="position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--surface)"></span>' : ''}</button>
     <button class="btn btn-secondary btn-sm" data-a="pop" data-pop="create" aria-haspopup="menu" aria-label="Create new">${ic('plus', 14)}<span class="hide-m">New</span>${ic('chevron-down', 12, 'hide-m')}</button>
     <button class="ibtn hide-m" data-a="pop" data-pop="user" aria-label="Account menu" style="width:auto;padding:0 2px">${av(D().me, 'md', false)}</button>
   </header>`;
 }
 export function renderBottomNav() {
   const r = S.ui.route;
-  const unread = D().notifs.some(n => !n.read && n.type !== 'update');
   const b = (route, label, icon, extra = '') =>
     `<button class="${r === route ? 'on' : ''}" data-a="go" data-r="${route}">${ic(icon, 19)}<span>${label}</span>${extra}</button>`;
   return `<nav class="bottomnav" aria-label="Primary">
-    ${b('home', 'Home', 'house')}${b('mytasks', 'My Tasks', 'circle-check')}${b('projects', 'Projects', 'folder-kanban')}${b('inbox', 'Inbox', 'inbox', unread ? '<span class="bdot"></span>' : '')}
+    ${b('home', 'Home', 'house')}${b('mytasks', 'My work', 'circle-check')}${b('projects', 'Matters', 'folder-kanban')}${b('calendar', 'Deadlines', 'calendar')}
     <button data-a="openMnav">${ic('ellipsis', 19)}<span>More</span></button>
   </nav>`;
 }

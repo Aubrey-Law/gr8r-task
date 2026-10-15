@@ -11,30 +11,11 @@ import { SHORTCUTS } from '../overlays/modals.js';
 
 export const SET_NAV = [
   [
-    'General',
+    'Firm',
     [
-      ['workspace', 'Workspace', 'building-2'],
+      ['workspace', 'Firm', 'building-2'],
       ['appearance', 'Appearance', 'palette'],
-      ['language', 'Language', 'languages'],
       ['datetime', 'Date & time', 'clock'],
-    ],
-  ],
-  [
-    'Workspace',
-    [
-      ['members', 'Members', 'users'],
-      ['teams', 'Teams', 'users-round'],
-      ['projects', 'Projects', 'folder-kanban'],
-      ['permissions', 'Permissions', 'shield'],
-    ],
-  ],
-  [
-    'Notifications',
-    [
-      ['notif-email', 'Email', 'mail'],
-      ['notif-push', 'Push', 'smartphone'],
-      ['notif-mentions', 'Mentions', 'at-sign'],
-      ['notif-assign', 'Task assignments', 'user-check'],
     ],
   ],
   [
@@ -43,22 +24,6 @@ export const SET_NAV = [
       ['profile', 'Profile', 'user'],
       ['preferences', 'Preferences', 'sliders-horizontal'],
       ['shortcuts', 'Keyboard shortcuts', 'keyboard'],
-    ],
-  ],
-  [
-    'Security',
-    [
-      ['password', 'Password', 'key-round'],
-      ['sessions', 'Sessions', 'monitor-smartphone'],
-      ['2fa', 'Two-factor authentication', 'shield-check'],
-    ],
-  ],
-  [
-    'Billing',
-    [
-      ['plan', 'Plan', 'gem'],
-      ['payment', 'Payment', 'credit-card'],
-      ['invoices', 'Invoices', 'receipt'],
     ],
   ],
 ];
@@ -90,18 +55,18 @@ export function settingsBody(sec, title) {
   switch (sec) {
     case 'workspace':
       return (
-        H('Your workspace name, address, and identity.') +
+        H('Firm name and how this practice copy is labeled.') +
         `
       <form data-submit="saveWorkspace">
-      <div class="sblock" style="margin-top:0"><div class="row" style="gap:14px;margin-bottom:18px">${wsLogo(d.ws, 52)}<div><div class="label" style="margin-bottom:6px">Workspace icon</div><div class="swatches">${['#2F2E2A', '#5A67D8', '#3B82C4', '#23918A', '#C54B78', '#C48A1E'].map(c => `<button type="button" class="sw ${d.ws.c === c ? 'on' : ''}" style="--c:${c};width:22px;height:22px" data-a="wsColor" data-v="${c}" aria-label="Color ${c}"></button>`).join('')}</div></div></div>
-      <div class="col" style="gap:14px;max-width:440px"><div class="field"><label class="label" for="ws-name">Workspace name</label><input class="input" id="ws-name" value="${esc(d.ws.name)}"></div>
-      <div class="field"><label class="label" for="ws-url">Workspace URL</label><div class="row" style="gap:0"><span class="input" style="width:auto;background:var(--surface-2);border-right:0;border-radius:6px 0 0 6px;display:flex;align-items:center;color:var(--text-2)">gr8rstudio.com/</span><input class="input" id="ws-url" value="${esc(d.ws.url)}" style="border-radius:0 6px 6px 0"></div><span class="hint">Changing the URL will break existing links.</span></div>
+      <div class="sblock" style="margin-top:0"><div class="row" style="gap:14px;margin-bottom:18px">${wsLogo(d.ws, 52)}<div><div class="label" style="margin-bottom:6px">Firm mark</div><div class="swatches">${['#2F2E2A', '#5A67D8', '#3B82C4', '#23918A', '#C54B78', '#C48A1E'].map(c => `<button type="button" class="sw ${d.ws.c === c ? 'on' : ''}" style="--c:${c};width:22px;height:22px" data-a="wsColor" data-v="${c}" aria-label="Color ${c}"></button>`).join('')}</div></div></div>
+      <div class="col" style="gap:14px;max-width:440px"><div class="field"><label class="label" for="ws-name">Firm name</label><input class="input" id="ws-name" value="${esc(d.ws.name)}"></div>
+      <div class="field"><label class="label" for="ws-url">Practice address</label><div class="row" style="gap:0"><span class="input" style="width:auto;background:var(--surface-2);border-right:0;border-radius:6px 0 0 6px;display:flex;align-items:center;color:var(--text-2)">practice/</span><input class="input" id="ws-url" value="${esc(d.ws.url)}" style="border-radius:0 6px 6px 0"></div><span class="hint">This label stays in this browser.</span></div>
       <div><button class="btn btn-primary" data-a="saveWorkspace" id="ws-save">Save changes</button></div></div></div></form>
-      <div class="sblock"><h2 style="color:var(--red)">Danger zone</h2>${srow('Delete workspace', 'Permanently delete this workspace, its projects, tasks, and files. This cannot be undone.', `<button class="btn btn-danger-ghost" style="border:1px solid color-mix(in srgb,var(--red) 35%,transparent)" data-a="delWorkspace">Delete workspace</button>`)}</div>`
+      <div class="sblock"><h2 style="color:var(--red)">Danger zone</h2>${srow('Clear this practice copy', 'Removes the matters stored in this browser. This does not affect a future firm database.', `<button class="btn btn-danger-ghost" style="border:1px solid color-mix(in srgb,var(--red) 35%,transparent)" data-a="delWorkspace">Clear browser copy</button>`)}</div>`
       );
     case 'appearance':
       return (
-        H('Customize how Gr8r looks on this device.') +
+        H('Customize how this workspace looks on this device.') +
         `
       <div class="sblock" style="margin-top:0"><h2>Theme</h2><div class="themecards" style="margin-top:12px" role="radiogroup" aria-label="Theme">${[
         ['light', 'Light'],
@@ -134,7 +99,7 @@ export function settingsBody(sec, title) {
           .join('')}</div>`,
       )}</div>
       <div class="sblock"><h2>Density</h2>
-        ${srow('Sidebar density', 'Compact fits more projects on screen.', `<div class="seg">${['comfortable', 'compact'].map(k => `<button class="${P.side === k ? 'on' : ''}" data-a="setPref" data-k="side" data-v="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>`)}
+        ${srow('Sidebar density', 'Compact fits more matters on screen.', `<div class="seg">${['comfortable', 'compact'].map(k => `<button class="${P.side === k ? 'on' : ''}" data-a="setPref" data-k="side" data-v="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>`)}
         ${srow('Task display', 'Row height in lists and card padding on boards.', `<div class="seg">${['comfortable', 'compact'].map(k => `<button class="${P.density === k ? 'on' : ''}" data-a="setPref" data-k="density" data-v="${k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>`)}
         ${srow(
           'Motion',
@@ -293,14 +258,26 @@ export function settingsBody(sec, title) {
       return (
         H('Personal defaults for how you work.') +
         srow(
+          'Client draft wording',
+          'Used when a draft is written from a matter. You still review it before copying.',
+          sel(
+            'voice',
+            [
+              ['plain', 'Plain'],
+              ['professional', 'Professional'],
+            ],
+            P.voice || 'plain',
+          ),
+        ) +
+        srow(
           'Open on launch',
-          'The page you see when Gr8r opens.',
+          'The page you see when the workspace opens.',
           sel(
             'home',
             [
               ['home', 'Home'],
-              ['mytasks', 'My Tasks'],
-              ['inbox', 'Inbox'],
+              ['mytasks', 'My work'],
+              ['projects', 'Matters'],
             ],
             P.home,
           ),

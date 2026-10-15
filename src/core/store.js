@@ -3,7 +3,7 @@ import { TODAY, diffD, iso, parse, uid } from './utils.js';
 import { PCOLORS, TEAMS_SEED } from './constants.js';
 import { seed } from '../data/seed.js';
 
-export const STORE_KEY = 'gr8r.v2';
+export const STORE_KEY = 'gr8r.v4';
 export const DEFAULT_PREFS = {
   theme: 'system',
   accent: 'indigo',
@@ -16,8 +16,9 @@ export const DEFAULT_PREFS = {
   motion: 'system',
   home: 'home',
   openTasks: 'drawer',
-  name: 'Tanjim Islam',
-  title: 'Head of Product',
+  name: 'Avery Lang',
+  title: 'Attorney',
+  voice: 'plain',
 };
 export function load() {
   try {
@@ -41,7 +42,7 @@ export const S = {
     auth: null,
     authStep: 'login',
     onb: 0,
-    onbData: { use: 'product', team: 'kanban', size: '2-10', ws: '', proj: 'Website Launch', tmpl: 'web', invites: '' },
+    onbData: { use: 'estate', team: 'list', size: 'Just me', ws: '', proj: 'New matter', tmpl: 'estate', invites: '' },
     route: 'home',
     params: {},
     history: [],
@@ -119,7 +120,7 @@ export function progressOf(pid) {
 export function taskProg(t) {
   if (t.status === 'done') return 100;
   if (t.subtasks.length) return Math.round((t.subtasks.filter(s => s.done).length / t.subtasks.length) * 100);
-  return { backlog: 0, todo: 5, progress: 45, review: 80 }[t.status] || 0;
+  return { todo: 10, progress: 45, waiting: 30 }[t.status] || 0;
 }
 
 /* ---------- activity + notification helpers ---------- */

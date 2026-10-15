@@ -1,7 +1,7 @@
 /* ---------------- MODALS ---------------- */
 import { $$, MOD, ago, esc, fmtDate } from '../core/utils.js';
 import { ic } from '../core/icons.js';
-import { PCOLORS, PICONS } from '../core/constants.js';
+import { MATTER_TYPES, PCOLORS, PICONS, stagesFor } from '../core/constants.js';
 import { D, S, mem, pColor, proj, task, teamsList } from '../core/store.js';
 import { FT, av, filePrev, lbl, prPill, stPill } from '../ui/helpers.js';
 import { focusKey, render } from '../shell/render.js';
@@ -92,60 +92,52 @@ export function taskModal(m, H) {
     <button class="btn btn-secondary" data-a="closeModal">Cancel</button><button class="btn btn-primary" data-a="submitTask" id="f-submit">${m.edit ? 'Save changes' : 'Create task'}</button></div>`;
 }
 export const TEMPLATES = [
-  { id: 'blank', name: 'Blank project', icon: 'file', desc: 'Start from scratch', tasks: [] },
   {
-    id: 'product',
-    name: 'Product Development',
-    icon: 'target',
-    desc: 'Discovery to launch',
-    tasks: ['Define problem statement', 'User research plan', 'Write PRD', 'Design exploration', 'Build MVP', 'Beta launch'],
+    id: 'estate',
+    name: 'Estate planning',
+    icon: 'scale',
+    desc: 'Trust package checklist',
+    matterType: 'estate',
+    tasks: ['Conflict check', 'Engagement letter', 'Asset list', 'Draft trust and wills', 'Signing appointment', 'Deed and beneficiary follow-up'],
   },
   {
-    id: 'web',
-    name: 'Website',
-    icon: 'globe',
-    desc: 'IA, design, build, launch',
-    tasks: ['Sitemap & information architecture', 'Wireframes', 'Visual design', 'Build page templates', 'Content migration', 'QA & launch'],
+    id: 'probate',
+    name: 'Probate',
+    icon: 'landmark',
+    desc: 'Estate administration',
+    matterType: 'probate',
+    tasks: ['Open the estate file', 'Petition for probate', 'Letters', 'Notice to heirs and creditors', 'Inventory', 'Accounting'],
   },
-  {
-    id: 'mkt',
-    name: 'Marketing Campaign',
-    icon: 'megaphone',
-    desc: 'Brief, assets, channels',
-    tasks: ['Campaign brief', 'Audience research', 'Creative assets', 'Channel plan', 'Launch campaign', 'Performance report'],
-  },
-  {
-    id: 'design',
-    name: 'Design Project',
-    icon: 'palette',
-    desc: 'Discovery to handoff',
-    tasks: ['Discovery workshop', 'Moodboard', 'Concept directions', 'Refinement', 'Developer handoff'],
-  },
-  {
-    id: 'software',
-    name: 'Software Development',
-    icon: 'code',
-    desc: 'Spec, build, ship',
-    tasks: ['Technical spec', 'Set up repo & CI', 'Implement core API', 'Write tests', 'Code review', 'Deploy to staging'],
-  },
-  {
-    id: 'personal',
-    name: 'Personal Project',
-    icon: 'heart',
-    desc: 'Plan your own goals',
-    tasks: ['Brain dump ideas', 'Pick top 3 priorities', 'Schedule focus time', 'Weekly review'],
-  },
+  { id: 'blank', name: 'Blank matter', icon: 'folder', desc: 'Start from scratch', matterType: 'other', tasks: [] },
 ];
 export function projectModal(m, H) {
   const f = S.ui.pform;
   const err = S.ui.errors.pname;
-  return `${H(m.edit ? 'Project settings' : 'New project', m.edit ? '' : 'Projects hold tasks, files, and conversations for one body of work.')}
+  const stages = stagesFor(f.matterType);
+  const teams = teamsList();
+  return `${H(m.edit ? 'Matter settings' : 'New matter', m.edit ? '' : 'A matter holds the checklist, dates, documents, and parties for one client file.')}
   <form class="modal-b" data-submit="submitProject">
     <div class="row" style="gap:10px;align-items:flex-start">
       <button type="button" class="picon lg" style="--c:${PCOLORS[f.color]};cursor:default;flex-shrink:0;margin-top:22px" aria-hidden="true" tabindex="-1">${ic(f.icon, 18)}</button>
-      <div class="field grow"><label class="label" for="p-name">Project name</label><input class="input ${err ? 'is-error' : ''}" id="p-name" data-in="pform" data-f="name" value="${esc(f.name)}" placeholder="e.g. Website Redesign" autofocus aria-invalid="${!!err}">${err ? `<span class="err">${ic('circle-alert', 12)}${err}</span>` : ''}</div>
+      <div class="field grow"><label class="label" for="p-name">Matter name</label><input class="input ${err ? 'is-error' : ''}" id="p-name" data-in="pform" data-f="name" value="${esc(f.name)}" placeholder="e.g. Marsh revocable trust" autofocus aria-invalid="${!!err}">${err ? `<span class="err">${ic('circle-alert', 12)}${err}</span>` : ''}</div>
     </div>
-    <div class="field"><label class="label" for="p-desc">Description</label><textarea class="textarea" id="p-desc" data-in="pform" data-f="desc" rows="2" placeholder="What is this project about?">${esc(f.desc)}</textarea></div>
+    <div class="field"><label class="label" for="p-desc">Description</label><textarea class="textarea" id="p-desc" data-in="pform" data-f="desc" rows="2" placeholder="What is this matter about?">${esc(f.desc)}</textarea></div>
+    <div class="row" style="gap:12px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:160px"><label class="label" for="p-type">Type</label><select class="select" id="p-type" data-in="pform" data-f="matterType">${MATTER_TYPES.map(t => `<option value="${t.id}" ${f.matterType === t.id ? 'selected' : ''}>${t.name}</option>`).join('')}</select></div>
+      <div class="field" style="flex:1;min-width:160px"><label class="label" for="p-stage">Stage</label><select class="select" id="p-stage" data-in="pform" data-f="stage">${stages.map(([id, name]) => `<option value="${id}" ${f.stage === id ? 'selected' : ''}>${name}</option>`).join('')}</select></div>
+      <div class="field" style="flex:1;min-width:160px"><label class="label" for="p-jur">Jurisdiction</label><input class="input" id="p-jur" data-in="pform" data-f="jurisdiction" value="${esc(f.jurisdiction || '')}" placeholder="Sample State"></div>
+    </div>
+    <div class="row" style="gap:12px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:180px"><label class="label" for="p-court">Court</label><input class="input" id="p-court" data-in="pform" data-f="court" value="${esc(f.court || '')}" placeholder="For probate matters"></div>
+      <div class="field" style="flex:1;min-width:140px"><label class="label" for="p-case">Case number</label><input class="input" id="p-case" data-in="pform" data-f="caseNumber" value="${esc(f.caseNumber || '')}" placeholder="2026-PR-0000"></div>
+      <div class="field" style="flex:1;min-width:140px"><label class="label" for="p-due">Target date</label><input type="date" class="input" id="p-due" data-in="pform" data-f="due" value="${f.due || ''}"></div>
+    </div>
+    <div class="row" style="gap:12px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:160px"><label class="label" for="p-p1">Party</label><input class="input" id="p-p1" data-in="pform" data-f="party1" value="${esc(f.party1 || '')}" placeholder="Client or personal representative"></div>
+      <div class="field" style="flex:1;min-width:120px"><label class="label" for="p-p1r">Role</label><input class="input" id="p-p1r" data-in="pform" data-f="party1role" value="${esc(f.party1role || '')}" placeholder="Client"></div>
+      <div class="field" style="flex:1;min-width:160px"><label class="label" for="p-p2">Second party</label><input class="input" id="p-p2" data-in="pform" data-f="party2" value="${esc(f.party2 || '')}" placeholder="Spouse or decedent"></div>
+      <div class="field" style="flex:1;min-width:120px"><label class="label" for="p-p2r">Role</label><input class="input" id="p-p2r" data-in="pform" data-f="party2role" value="${esc(f.party2role || '')}" placeholder="Spouse"></div>
+    </div>
     <div class="row" style="gap:16px;align-items:flex-start;flex-wrap:wrap">
       <div class="field" style="flex:1;min-width:220px"><span class="label">Icon</span><div class="iconpick" role="radiogroup" aria-label="Icon">${PICONS.map(i => `<button type="button" role="radio" aria-checked="${f.icon === i}" class="${f.icon === i ? 'on' : ''}" data-a="pformSet" data-f="icon" data-v="${i}" aria-label="${i}">${ic(i, 15)}</button>`).join('')}</div></div>
       <div class="field"><span class="label">Color</span><div class="swatches" role="radiogroup" aria-label="Color" style="max-width:140px">${Object.entries(
@@ -158,18 +150,19 @@ export function projectModal(m, H) {
         .join('')}</div></div>
     </div>
     <div class="row" style="gap:12px;flex-wrap:wrap">
-      <div class="field" style="flex:1;min-width:150px"><label class="label" for="p-team">Team</label><select class="select" id="p-team" data-in="pform" data-f="team">${teamsList()
-        .map(t => `<option value="${t.id}" ${f.team === t.id ? 'selected' : ''}>${t.name}</option>`)
-        .join('')}</select></div>
-      <div class="field" style="flex:1;min-width:150px"><label class="label" for="p-lead">Lead</label><select class="select" id="p-lead" data-in="pform" data-f="lead">${D()
+      ${
+        teams.length
+          ? `<div class="field" style="flex:1;min-width:150px"><label class="label" for="p-team">Team</label><select class="select" id="p-team" data-in="pform" data-f="team">${teams.map(t => `<option value="${t.id}" ${f.team === t.id ? 'selected' : ''}>${t.name}</option>`).join('')}</select></div>`
+          : ''
+      }
+      <div class="field" style="flex:1;min-width:180px"><label class="label" for="p-lead">Responsible attorney</label><select class="select" id="p-lead" data-in="pform" data-f="lead">${D()
         .members.filter(x => x.status === 'active')
         .map(x => `<option value="${x.id}" ${f.lead === x.id ? 'selected' : ''}>${esc(x.name)}</option>`)
         .join('')}</select></div>
-      <div class="field" style="flex:1;min-width:150px"><label class="label" for="p-due">Target date</label><input type="date" class="input" id="p-due" data-in="pform" data-f="due" value="${f.due || ''}"></div>
     </div>
-    ${m.edit ? '' : `<div class="field"><span class="label">Template</span><div class="tmpls" role="radiogroup">${TEMPLATES.map(t => `<button type="button" role="radio" aria-checked="${f.tmpl === t.id}" class="opt ${f.tmpl === t.id ? 'on' : ''}" data-a="pformSet" data-f="tmpl" data-v="${t.id}" style="padding:10px">${ic(t.icon, 16)}<b style="font-size:12.5px">${t.name}</b><span>${t.tasks.length ? t.tasks.length + ' starter tasks' : t.desc}</span></button>`).join('')}</div></div>`}
+    ${m.edit ? '' : `<div class="field"><span class="label">Checklist</span><div class="tmpls" role="radiogroup">${TEMPLATES.map(t => `<button type="button" role="radio" aria-checked="${f.tmpl === t.id}" class="opt ${f.tmpl === t.id ? 'on' : ''}" data-a="pformSet" data-f="tmpl" data-v="${t.id}" style="padding:10px">${ic(t.icon, 16)}<b style="font-size:12.5px">${t.name}</b><span>${t.tasks.length ? t.tasks.length + ' checklist items' : t.desc}</span></button>`).join('')}</div></div>`}
   </form>
-  <div class="modal-f"><span class="sp"></span><button class="btn btn-secondary" data-a="closeModal">Cancel</button><button class="btn btn-primary" data-a="submitProject">${m.edit ? 'Save changes' : 'Create project'}</button></div>`;
+  <div class="modal-f"><span class="sp"></span><button class="btn btn-secondary" data-a="closeModal">Cancel</button><button class="btn btn-primary" data-a="submitProject">${m.edit ? 'Save changes' : 'Create matter'}</button></div>`;
 }
 export const PERMS = ['Can view', 'Can comment', 'Can edit', 'Full access'];
 export function shareModal(m, H) {

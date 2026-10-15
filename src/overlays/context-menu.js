@@ -18,7 +18,7 @@ export function ctxMenu(p) {
       I('ctxStatus', 'circle-dot', 'Status…') +
       I('ctxAssign', 'user', 'Assign to…') +
       I('ctxPrio', 'signal-high', 'Priority…') +
-      I('ctxMove', 'folder-input', 'Move to project…') +
+      I('ctxMove', 'folder-input', 'Move to matter…') +
       sep +
       I('toggleFavTask', 'star', t.fav ? 'Remove from favorites' : 'Add to favorites') +
       I('copyLink', 'link', 'Copy link') +
@@ -42,8 +42,8 @@ export function ctxMenu(p) {
       (visibleProjects().indexOf(pr) > 0 ? I('projUp', 'arrow-up', 'Move up in sidebar') : '') +
       (visibleProjects().indexOf(pr) < visibleProjects().length - 1 ? I('projDown', 'arrow-down', 'Move down in sidebar') : '') +
       sep +
-      I('archiveProject', 'archive', pr.status === 'complete' ? 'Archive' : 'Archive project') +
-      I('delProject', 'trash-2', 'Delete project', 'danger')
+      I('archiveProject', 'archive', pr.status === 'complete' ? 'Archive' : 'Archive matter') +
+      I('delProject', 'trash-2', 'Delete matter', 'danger')
     );
   }
   if (p.ctx === 'column') {

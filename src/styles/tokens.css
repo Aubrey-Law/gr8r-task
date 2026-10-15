@@ -46,6 +46,7 @@
   --st-todo: #7c7870;
   --st-progress: #c88a14;
   --st-review: #7652c2;
+  --st-waiting: #7652c2;
   --st-done: #2e8456;
   /* elevation */
   --shadow-sm: 0 1px 2px rgba(28, 25, 20, 0.05);
@@ -130,6 +131,7 @@
     --st-todo: #a6a39c;
     --st-progress: #d8a443;
     --st-review: #a98deb;
+    --st-waiting: #a98deb;
     --st-done: #5cba86;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-card: 0 0 0 1px var(--border);
@@ -170,6 +172,7 @@
   --st-todo: #a6a39c;
   --st-progress: #d8a443;
   --st-review: #a98deb;
+  --st-waiting: #a98deb;
   --st-done: #5cba86;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-card: 0 0 0 1px var(--border);

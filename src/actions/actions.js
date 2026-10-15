@@ -2,7 +2,7 @@
    ACTIONS · INPUT HANDLERS · DRAG & DROP · KEYBOARD · INIT
    ===================================================================== */
 import { $, $$, TODAY, addD, dOff, esc, fmtDate, iso, parse, uid } from '../core/utils.js';
-import { PR, PSTAT, ST } from '../core/constants.js';
+import { PR, PSTAT, ST, stagesFor } from '../core/constants.js';
 import { seed } from '../data/seed.js';
 import { D, DEFAULT_PREFS, S, allTasks, canSee, commentsOf, logAct, me, mem, proj, save, task, tasksOf, visibleProjects } from '../core/store.js';
 import { fileType, fsize } from '../ui/helpers.js';
@@ -11,6 +11,7 @@ import { mutate, toast } from '../ui/toast.js';
 import { autosize, focusKey, fxSet, go, render } from '../shell/render.js';
 import { viewOf } from '../shell/view-engine.js';
 import { TEMPLATES, closeModal, openModal } from '../overlays/modals.js';
+import { buildDrafts } from '../features/status-draft.js';
 import { closePop, openPop, tgt } from '../overlays/popovers.js';
 import { strengthMeter } from '../pages/settings.js';
 
@@ -168,7 +169,7 @@ A.go = el => {
   const p = {};
   if (el.dataset.id) p.id = el.dataset.id;
   if (el.dataset.tab) p.tab = el.dataset.tab;
-  else if (r === 'project') p.tab = S.prefs.defaultTab || 'board';
+  else if (r === 'project') p.tab = S.prefs.defaultTab || 'overview';
   if (el.dataset.sec) p.sec = el.dataset.sec;
   S.ui.palette = null;
   const tabOnly = r === 'project' && S.ui.route === 'project' && S.ui.params.id === p.id;
@@ -816,7 +817,7 @@ export function handleFiles(files, ctx) {
       if (up.pct >= 100) {
         clearInterval(iv);
         S.ui.uploads = S.ui.uploads.filter(x => x !== up);
-        const rec = { id: uid('f'), name: up.name, type: fileType(up.name), size: up.size, by: D().me, at: Date.now() };
+        const rec = { id: uid('f'), name: up.name, type: fileType(up.name), size: up.size, by: D().me, at: Date.now(), source: 'office', signed: false };
         D().files.unshift({ ...rec, project: up.project, task: up.task || null });
         if (up.task) {
           const t = task(up.task);
@@ -1210,21 +1211,76 @@ A.clearProjFilters = () => {
   S.ui.projStatus = 'all';
   render();
 };
+function blankMatterForm() {
+  return {
+    name: '',
+    desc: '',
+    icon: 'scale',
+    color: 'teal',
+    team: '',
+    lead: D().me,
+    due: dOff(30),
+    tmpl: 'estate',
+    matterType: 'estate',
+    stage: 'inquiry',
+    jurisdiction: '',
+    court: '',
+    caseNumber: '',
+    party1: '',
+    party1role: 'Client',
+    party2: '',
+    party2role: 'Spouse',
+  };
+}
+function partiesFromForm(f) {
+  return [1, 2]
+    .map(i => ({ name: (f['party' + i] || '').trim(), role: (f['party' + i + 'role'] || '').trim() || 'Party' }))
+    .filter(x => x.name)
+    .map(x => ({ id: uid('y'), ...x }));
+}
 A.newProject = () => {
-  S.ui.pform = { name: '', desc: '', icon: 'folder', color: 'indigo', team: me().team, lead: D().me, due: dOff(30), tmpl: 'blank' };
+  S.ui.pform = blankMatterForm();
   S.ui.errors = {};
   S.ui.pop = null;
   openModal({ type: 'project' });
 };
 A.editProject = el => {
   const p = proj(el.dataset.id);
+  const parties = p.parties || [];
   S.ui.pop = null;
-  S.ui.pform = { name: p.name, desc: p.desc, icon: p.icon, color: p.color, team: p.team, lead: p.lead, due: p.due, tmpl: 'blank' };
+  S.ui.pform = {
+    ...blankMatterForm(),
+    name: p.name,
+    desc: p.desc,
+    icon: p.icon,
+    color: p.color,
+    team: p.team || '',
+    lead: p.lead,
+    due: p.due,
+    tmpl: 'blank',
+    matterType: p.matterType || 'other',
+    stage: p.stage || 'intake',
+    jurisdiction: p.jurisdiction || '',
+    court: p.court || '',
+    caseNumber: p.caseNumber || '',
+    party1: parties[0]?.name || '',
+    party1role: parties[0]?.role || 'Client',
+    party2: parties[1]?.name || '',
+    party2role: parties[1]?.role || '',
+  };
   S.ui.errors = {};
   openModal({ type: 'project', edit: p.id });
 };
 IN.pform = el => {
   S.ui.pform[el.dataset.f] = el.value;
+  if (el.dataset.f === 'matterType') {
+    const stages = stagesFor(el.value);
+    if (!stages.some(s => s[0] === S.ui.pform.stage)) S.ui.pform.stage = stages[0][0];
+    const icon = { estate: 'scale', probate: 'landmark', other: 'folder' }[el.value];
+    if (icon) S.ui.pform.icon = icon;
+    render();
+    return;
+  }
   if (el.dataset.f === 'name' && S.ui.errors.pname && el.value.trim()) {
     S.ui.errors.pname = null;
     render();
@@ -1234,7 +1290,11 @@ A.pformSet = el => {
   S.ui.pform[el.dataset.f] = el.dataset.v;
   if (el.dataset.f === 'tmpl') {
     const t = TEMPLATES.find(x => x.id === el.dataset.v);
-    if (t && S.ui.pform.icon === 'folder') S.ui.pform.icon = t.icon === 'file' ? 'folder' : t.icon;
+    if (t) {
+      S.ui.pform.matterType = t.matterType || 'other';
+      S.ui.pform.icon = t.icon === 'file' ? 'folder' : t.icon;
+      S.ui.pform.stage = stagesFor(S.ui.pform.matterType)[0][0];
+    }
   }
   render();
 };
@@ -1251,7 +1311,7 @@ export function makeKey(name) {
       name
         .replace(/[^A-Za-z]/g, '')
         .slice(0, 3)
-        .toUpperCase() || 'PRJ';
+        .toUpperCase() || 'MTR';
   while (D().projects.some(p => p.key === k)) k += 'X';
   return k;
 }
@@ -1262,30 +1322,39 @@ export function createProject(f, tmplId) {
     name: f.name,
     icon: f.icon,
     color: f.color,
-    status: 'planning',
-    team: f.team,
+    status: 'active',
+    matterType: f.matterType || 'other',
+    stage: f.stage || stagesFor(f.matterType || 'other')[0][0],
+    jurisdiction: f.jurisdiction || '',
+    court: f.court || '',
+    caseNumber: f.caseNumber || '',
+    parties: f.parties || [],
+    drafts: null,
+    notes: Array.isArray(f.notes) ? f.notes.map(n => ({ ...n, id: uid('mn') })) : [],
+    reminder: f.reminder || '',
+    team: f.team || '',
     lead: f.lead,
     due: f.due || dOff(30),
     start: dOff(0),
     fav: false,
-    members: [...new Set([D().me, f.lead])],
+    members: [...new Set([D().me, f.lead].filter(Boolean))],
     desc: f.desc || 'No description yet.',
     milestones: [],
     last: 0,
   };
   D().projects.push(p);
   D().projOrder.unshift(p.id);
-  D().activity.unshift({ id: uid('a'), by: D().me, verb: 'created project', task: null, project: p.id, at: Date.now(), extra: '' });
+  D().activity.unshift({ id: uid('a'), by: D().me, verb: 'created matter', task: null, project: p.id, at: Date.now(), extra: '' });
   const tm = TEMPLATES.find(t => t.id === tmplId);
   (tm?.tasks || []).forEach((title, i) =>
     createTask({
       project: p.id,
       title,
-      status: i === 0 ? 'todo' : 'backlog',
-      assignee: i === 0 ? D().me : null,
+      status: 'todo',
+      assignee: D().me,
       priority: i === 0 ? 'high' : 'medium',
-      due: dOff(5 + i * 5),
-      start: dOff(i * 5),
+      due: dOff(7 + i * 7),
+      start: dOff(0),
     }),
   );
   return p;
@@ -1296,11 +1365,12 @@ A.submitProject = () => {
   f.name = ($('#p-name')?.value || '').trim();
   f.desc = $('#p-desc')?.value || '';
   if (!f.name) {
-    S.ui.errors.pname = 'Give the project a name';
+    S.ui.errors.pname = 'Give the matter a name';
     render();
     $('#p-name')?.focus();
     return;
   }
+  f.parties = partiesFromForm(f);
   if (m.edit) {
     const p = proj(m.edit);
     if (
@@ -1313,13 +1383,19 @@ A.submitProject = () => {
           team: f.team,
           lead: f.lead,
           due: f.due,
-          members: [...new Set([...p.members, f.lead])],
+          matterType: f.matterType,
+          stage: f.stage,
+          jurisdiction: f.jurisdiction,
+          court: f.court,
+          caseNumber: f.caseNumber,
+          parties: f.parties.length ? f.parties : p.parties || [],
+          members: [...new Set([...p.members, f.lead].filter(Boolean))],
         }),
       )
     ) {
       S.ui.modals.pop();
       render();
-      toast('Project updated');
+      toast('Matter updated');
     }
     return;
   }
@@ -1330,9 +1406,86 @@ A.submitProject = () => {
     })
   )
     return;
+  p.parties = f.parties;
   S.ui.modals.pop();
-  go('project', { id: p.id, tab: f.tmpl === 'blank' ? 'overview' : S.prefs.defaultTab || 'board' });
-  toast(`Created ${p.name}${tasksOf(p.id).length ? ` with ${tasksOf(p.id).length} starter tasks` : ''}`);
+  go('project', { id: p.id, tab: 'overview' });
+  toast(`Created ${p.name}${tasksOf(p.id).length ? ` with ${tasksOf(p.id).length} checklist items` : ''}`);
+};
+A.draftStatus = el => {
+  const p = proj(el.dataset.id);
+  if (!p) return;
+  const use = document.getElementById('draft-use-' + p.id)?.value || el.dataset.use || 'status';
+  const next = buildDrafts(p, use);
+  mutate(() => {
+    p.drafts = { ...next, reviewedAt: null, generatedAt: Date.now() };
+  });
+  if (S.ui.route === 'project' && S.ui.params.id === p.id && S.ui.params.tab !== 'overview') go('project', { id: p.id, tab: 'overview' }, { tab: true });
+  toast('Draft written from this matter. Review it before copying.');
+};
+A.markDraftReviewed = el => {
+  const p = proj(el.dataset.id);
+  if (!p?.drafts?.internal || !p.drafts.client) return;
+  mutate(() => {
+    p.drafts.reviewedAt = Date.now();
+  });
+  toast('Marked reviewed. You can copy either draft.');
+};
+A.copyDraft = async el => {
+  const p = proj(el.dataset.id);
+  const which = el.dataset.which === 'client' ? 'client' : 'internal';
+  if (!p?.drafts?.reviewedAt) {
+    toast('Mark the draft reviewed after you finish editing.', { kind: 'info' });
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(p.drafts[which] || '');
+    toast(which === 'client' ? 'Copied the client update' : 'Copied the internal memo');
+  } catch {
+    toast('Copy failed. Select the text and copy it yourself.', { kind: 'err' });
+  }
+};
+IN.matterDraft = el => {
+  const p = proj(el.dataset.id);
+  if (!p?.drafts) return;
+  const which = el.dataset.which === 'client' ? 'client' : 'internal';
+  p.drafts[which] = el.value;
+  p.drafts.reviewedAt = null;
+  save();
+};
+IN.matterReminder = el => {
+  const p = proj(el.dataset.id);
+  if (!p) return;
+  p.reminder = el.value;
+  save();
+};
+IN.matterNote = el => {
+  S.ui.noteDraft = S.ui.noteDraft || {};
+  S.ui.noteDraft[el.dataset.id] = el.value;
+};
+A.addMatterNote = el => {
+  const p = proj(el.dataset.id);
+  const text = (S.ui.noteDraft?.[p?.id] || document.getElementById('note-in-' + p?.id)?.value || '').trim();
+  if (!p || !text) return;
+  mutate(() => {
+    p.notes = p.notes || [];
+    p.notes.unshift({ id: uid('mn'), text, at: Date.now() });
+    if (S.ui.noteDraft) S.ui.noteDraft[p.id] = '';
+  });
+};
+A.delMatterNote = el => {
+  const p = proj(el.dataset.id);
+  if (!p) return;
+  mutate(() => {
+    p.notes = (p.notes || []).filter(n => n.id !== el.dataset.nid);
+  });
+};
+IN.fileMeta = el => {
+  const f = D().files.find(x => x.id === el.dataset.id);
+  if (!f) return;
+  if (el.dataset.f === 'signed') f.signed = el.checked;
+  else f.source = el.value;
+  save();
+  render();
 };
 A.dupProject = el => {
   const p = proj(el.dataset.id);
@@ -1349,8 +1502,8 @@ A.archiveProject = el => {
   S.ui.pop = null;
   confirmDlg({
     title: `Archive ${p.name}?`,
-    body: 'The project will be hidden from the sidebar and project lists. Tasks, files, and comments are kept, and you can restore it from Settings → Projects.',
-    ok: 'Archive project',
+    body: 'The matter will be hidden from the sidebar and matter list. Checklist items, documents, and notes are kept, and you can restore it from Archive.',
+    ok: 'Archive matter',
     icon: 'archive',
     run: () => {
       const snap = snapshot();

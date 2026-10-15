@@ -5,7 +5,7 @@ import { esc } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { PSTAT } from '../core/constants.js';
 import { D, S, canSee, proj, tasksOf } from '../core/store.js';
-import { avStack, empty, pIcon } from '../ui/helpers.js';
+import { empty, pIcon } from '../ui/helpers.js';
 import { applyView, groupTasks, viewOf, viewToolbar } from '../shell/view-engine.js';
 import { listHtml } from '../components/task-list.js';
 import { page404, stateDenied } from './errors.js';
@@ -18,12 +18,9 @@ import { filesHtml } from '../views/files.js';
 
 export const PTABS = [
   ['overview', 'Overview', 'layout-dashboard'],
-  ['board', 'Board', 'square-kanban'],
-  ['list', 'List', 'list'],
-  ['table', 'Table', 'table-2'],
-  ['calendar', 'Calendar', 'calendar'],
-  ['timeline', 'Timeline', 'chart-gantt'],
-  ['files', 'Files', 'paperclip'],
+  ['list', 'Checklist', 'list'],
+  ['calendar', 'Deadlines', 'calendar'],
+  ['files', 'Documents', 'paperclip'],
   ['activity', 'Activity', 'activity'],
 ];
 
@@ -58,20 +55,16 @@ export function pageProject() {
         ${pIcon(p, 'lg', 18)}
         <h1>${esc(p.name)}</h1>
         <button class="ibtn ibtn-sm" data-a="toggleFavProj" data-id="${p.id}" data-tip="${p.fav ? 'Remove from favorites' : 'Add to favorites'}" aria-pressed="${p.fav}" aria-label="Favorite" style="${p.fav ? 'color:var(--amber)' : ''}">${ic('star', 15)}</button>
-        <button class="pillbtn bordered" data-a="pop" data-pop="pstatus" data-id="${p.id}" aria-label="Project status" style="height:24px"><span class="pdot" style="--c:${PSTAT[p.status].c};border-radius:50%;width:7px;height:7px"></span>${PSTAT[p.status].name}${ic('chevron-down', 12)}</button>
+        <button class="pillbtn bordered" data-a="pop" data-pop="pstatus" data-id="${p.id}" aria-label="Matter status" style="height:24px"><span class="pdot" style="--c:${PSTAT[p.status].c};border-radius:50%;width:7px;height:7px"></span>${PSTAT[p.status].name}${ic('chevron-down', 12)}</button>
         <span class="sp"></span>
         <div class="row" style="gap:4px">
-          <button class="row" data-a="share" data-id="${p.id}" aria-label="Members" style="gap:0">${avStack(p.members, 5, 'md')}</button>
-          <button class="ibtn ibtn-sm" data-a="share" data-id="${p.id}" data-tip="Add member" aria-label="Add member">${ic('user-plus', 15)}</button>
-          <button class="btn btn-secondary btn-sm hide-m" data-a="share" data-id="${p.id}">${ic('share-2', 13)}Share</button>
-          <button class="ibtn ibtn-sm" data-a="editProject" data-id="${p.id}" data-tip="Project settings" aria-label="Project settings">${ic('settings', 15)}</button>
+          <button class="btn btn-secondary btn-sm" data-a="draftStatus" data-id="${p.id}">${ic('sparkles', 13)}Draft status</button>
+          <button class="ibtn ibtn-sm" data-a="editProject" data-id="${p.id}" data-tip="Matter settings" aria-label="Matter settings">${ic('settings', 15)}</button>
           <button class="ibtn ibtn-sm" data-a="ctxBtn" data-ctx="project" data-id="${p.id}" aria-label="More">${ic('ellipsis', 15)}</button>
         </div>
       </div>
-      <nav class="tabs" aria-label="Project views">
+      <nav class="tabs" aria-label="Matter views">
         ${PTABS.map(([k, n, i]) => `<button ${tab === k ? 'aria-current="page"' : ''} class="tab ${tab === k ? 'on' : ''}" data-a="go" data-r="project" data-id="${p.id}" data-tab="${k}">${ic(i, 14)}${n}</button>`).join('')}
-        ${views.map(v => `<button ${tab === 'v:' + v.id ? 'aria-current="page"' : ''} class="tab ${tab === 'v:' + v.id ? 'on' : ''}" data-a="go" data-r="project" data-id="${p.id}" data-tab="v:${v.id}" data-ctx="savedview" data-vid="${v.id}">${ic('list-filter', 14)}${esc(v.name)}</button>`).join('')}
-        <button class="tab" data-a="saveView" data-id="${p.id}" data-tip="Save current filters as a view" aria-label="Save view">${ic('plus', 14)}</button>
       </nav>
     </div>
     <div class="pbody${S.ui.fx.tab ? ' fx-tab' : ''}">${body}</div>
@@ -83,8 +76,8 @@ export function taskViewBody(type, ts, key, p) {
   const noTasks = !tasksOf(p.id).length;
   const emptyAll = empty(
     'list-checks',
-    'No tasks here',
-    'Add a task to get things moving.',
+    'No checklist items yet',
+    'Add a task to get this matter moving.',
     `<button class="btn btn-primary btn-sm" data-a="newTask" data-project="${p.id}">${ic('plus', 14)}Add task</button>`,
   );
   const emptyFilter = empty(
