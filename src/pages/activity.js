@@ -15,7 +15,7 @@ export function pageActivity() {
         : f === 'status'
           ? /moved|completed|reopened/.test(a.verb)
           : f === 'projects'
-            ? a.verb.includes('project')
+            ? /project|matter/.test(a.verb)
             : true,
     );
   if (who !== 'all') as = as.filter(a => a.by === who);

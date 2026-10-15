@@ -181,7 +181,7 @@ A.back = () => {
   else go('home');
 };
 A.reload = () => render();
-A.openProject = el => go('project', { id: el.dataset.id, tab: S.prefs.defaultTab || 'board' });
+A.openProject = el => go('project', { id: el.dataset.id, tab: S.prefs.defaultTab || 'overview' });
 A.set = el => {
   const k = el.dataset.k;
   let v = el.dataset.v;
