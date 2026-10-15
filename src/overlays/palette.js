@@ -14,7 +14,7 @@ import { A } from '../actions/actions.js';
 export function commands() {
   return [
     { id: 'c-task', name: 'Create task', icon: 'plus', kbd: 'N', run: () => A.newTask(document.body) },
-    { id: 'c-proj', name: 'Create project', icon: 'folder-plus', kbd: 'P', run: () => A.newProject() },
+    { id: 'c-proj', name: 'Create matter', icon: 'folder-plus', kbd: 'P', run: () => A.newProject() },
     {
       id: 'c-search',
       name: 'Search workspace',
@@ -26,12 +26,9 @@ export function commands() {
       },
     },
     { id: 'c-home', name: 'Go to Home', icon: 'house', kbd: 'G H', run: () => go('home') },
-    { id: 'c-inbox', name: 'Go to Inbox', icon: 'inbox', kbd: 'G I', run: () => go('inbox') },
-    { id: 'c-my', name: 'Go to My Tasks', icon: 'circle-check', kbd: 'G T', run: () => go('mytasks') },
-    { id: 'c-projs', name: 'Go to Projects', icon: 'folder-kanban', kbd: 'G P', run: () => go('projects') },
-    { id: 'c-cal', name: 'Go to Calendar', icon: 'calendar', kbd: 'G C', run: () => go('calendar') },
-    { id: 'c-tl', name: 'Go to Timeline', icon: 'chart-gantt', run: () => go('timeline') },
-    { id: 'c-mem', name: 'Go to Members', icon: 'users', run: () => go('members') },
+    { id: 'c-my', name: 'Go to My work', icon: 'circle-check', kbd: 'G T', run: () => go('mytasks') },
+    { id: 'c-projs', name: 'Go to Matters', icon: 'folder-kanban', kbd: 'G P', run: () => go('projects') },
+    { id: 'c-cal', name: 'Go to Deadlines', icon: 'calendar', kbd: 'G C', run: () => go('calendar') },
     { id: 'c-set', name: 'Open settings', icon: 'settings', kbd: 'G S', run: () => go('settings') },
     { id: 'c-app', name: 'Appearance settings', icon: 'palette', run: () => go('settings', { sec: 'appearance' }) },
     {
@@ -50,7 +47,6 @@ export function commands() {
       kbd: MOD + ' ⇧ L',
       run: () => A.toggleDark(),
     },
-    { id: 'c-inv', name: 'Invite member', icon: 'user-plus', run: () => A.invite() },
     { id: 'c-side', name: 'Toggle sidebar', icon: 'panel-left', kbd: '[', run: () => A.toggleSide() },
     { id: 'c-keys', name: 'Keyboard shortcuts', icon: 'keyboard', kbd: '?', run: () => A.shortcuts() },
     { id: 'c-out', name: 'Sign out', icon: 'log-out', run: () => A.signOut() },

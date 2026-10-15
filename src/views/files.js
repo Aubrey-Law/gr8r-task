@@ -14,7 +14,7 @@ export function filesHtml(pid) {
   const ups = (u.uploads || []).filter(x => x.project === pid);
   const view = u.fileView;
   return `<div class="toolbar">
-      <div class="inwrap">${ic('search', 13)}<input class="input search-sm" id="file-q" data-in="fileQ" placeholder="Search files" value="${esc(u.fileQ || '')}" aria-label="Search files"></div>
+      <div class="inwrap">${ic('search', 13)}<input class="input search-sm" id="file-q" data-in="fileQ" placeholder="Search documents" value="${esc(u.fileQ || '')}" aria-label="Search documents"></div>
       <select class="select" style="height:26px;width:auto;font-size:12px" data-in="fileType" aria-label="Filter by type"><option value="all">All types</option>${Object.entries(
         FT,
       )

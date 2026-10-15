@@ -40,7 +40,7 @@ export function pageMyTasks() {
   ];
   const mode = S.ui.myView;
   return `<div class="page flush">
-    <div class="ph"><div><h1>My Tasks</h1><p>${groups[1].tasks.length} due today · ${groups[0].tasks.length} overdue · ${groups[2].tasks.length} upcoming</p></div>
+    <div class="ph"><div><h1>My work</h1><p>${groups[1].tasks.length} due today · ${groups[0].tasks.length} overdue · ${groups[2].tasks.length} upcoming</p></div>
       <div class="acts"><div class="seg" role="tablist" aria-label="View">${[
         ['list', 'List', 'list'],
         ['calendar', 'Calendar', 'calendar'],

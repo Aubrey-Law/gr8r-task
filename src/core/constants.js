@@ -1,9 +1,8 @@
 /* ---------- vocab ---------- */
 export const STATUSES = [
-  { id: 'backlog', name: 'Backlog' },
-  { id: 'todo', name: 'To Do' },
-  { id: 'progress', name: 'In Progress' },
-  { id: 'review', name: 'Review' },
+  { id: 'todo', name: 'To do' },
+  { id: 'progress', name: 'In progress' },
+  { id: 'waiting', name: 'Waiting' },
   { id: 'done', name: 'Done' },
 ];
 export const ST = Object.fromEntries(STATUSES.map(s => [s.id, s]));
@@ -16,23 +15,54 @@ export const PRIOS = [
 ];
 export const PR = Object.fromEntries(PRIOS.map(p => [p.id, p]));
 export const LABELS = [
-  { id: 'design', name: 'Design', c: 'var(--violet)' },
-  { id: 'frontend', name: 'Frontend', c: 'var(--blue)' },
-  { id: 'backend', name: 'Backend', c: 'var(--teal)' },
-  { id: 'research', name: 'Research', c: 'var(--amber)' },
-  { id: 'content', name: 'Content', c: 'var(--rose)' },
-  { id: 'bug', name: 'Bug', c: 'var(--red)' },
-  { id: 'qa', name: 'QA', c: 'var(--green)' },
-  { id: 'growth', name: 'Growth', c: 'var(--orange)' },
+  { id: 'court', name: 'Court', c: 'var(--violet)' },
+  { id: 'client', name: 'Client', c: 'var(--blue)' },
+  { id: 'funding', name: 'Funding', c: 'var(--teal)' },
+  { id: 'tax', name: 'Tax', c: 'var(--amber)' },
+  { id: 'deed', name: 'Deed', c: 'var(--rose)' },
+  { id: 'beneficiary', name: 'Beneficiary', c: 'var(--green)' },
 ];
 export const LB = Object.fromEntries(LABELS.map(l => [l.id, l]));
 export const PSTAT = {
-  planning: { name: 'Planning', c: 'var(--gray)' },
-  active: { name: 'In Progress', c: 'var(--blue)' },
-  risk: { name: 'At Risk', c: 'var(--red)' },
-  hold: { name: 'On Hold', c: 'var(--amber)' },
-  complete: { name: 'Completed', c: 'var(--green)' },
+  active: { name: 'Active', c: 'var(--blue)' },
+  client: { name: 'Waiting on client', c: 'var(--amber)' },
+  court: { name: 'Waiting on court', c: 'var(--red)' },
+  hold: { name: 'On hold', c: 'var(--gray)' },
+  complete: { name: 'Closed', c: 'var(--green)' },
 };
+export const MATTER_TYPES = [
+  { id: 'estate', name: 'Estate planning', icon: 'scale' },
+  { id: 'probate', name: 'Probate', icon: 'landmark' },
+  { id: 'other', name: 'Other', icon: 'folder' },
+];
+export const STAGES = {
+  estate: [
+    ['inquiry', 'Inquiry'],
+    ['engagement', 'Engagement'],
+    ['questionnaire', 'Questionnaire'],
+    ['drafting', 'Drafting'],
+    ['signing', 'Signing'],
+    ['funding', 'Funding'],
+    ['closed', 'Closed'],
+  ],
+  probate: [
+    ['intake', 'Intake'],
+    ['petition', 'Petition'],
+    ['notice', 'Notice'],
+    ['inventory', 'Inventory'],
+    ['accounting', 'Accounting'],
+    ['distribution', 'Distribution'],
+    ['closed', 'Closed'],
+  ],
+  other: [
+    ['intake', 'Intake'],
+    ['active', 'Active work'],
+    ['closed', 'Closed'],
+  ],
+};
+export const stagesFor = type => STAGES[type] || STAGES.other;
+export const stageName = (type, id) => stagesFor(type).find(s => s[0] === id)?.[1] || '—';
+export const matterTypeName = id => MATTER_TYPES.find(t => t.id === id)?.name || 'Matter';
 export const PCOLORS = {
   indigo: '#5A67D8',
   blue: '#3B82C4',
@@ -60,11 +90,8 @@ export const PICONS = [
   'heart',
   'folder',
   'sparkles',
+  'scale',
+  'landmark',
 ];
 export const ROLES = ['Owner', 'Admin', 'Member', 'Guest'];
-export const TEAMS_SEED = [
-  { id: 'design', name: 'Design', icon: 'palette', c: '#8662C9', desc: 'Product design, brand, and research' },
-  { id: 'eng', name: 'Engineering', icon: 'code', c: '#3B82C4', desc: 'Web, mobile, and platform engineering' },
-  { id: 'mkt', name: 'Marketing', icon: 'megaphone', c: '#C54B78', desc: 'Campaigns, content, and growth' },
-  { id: 'product', name: 'Product', icon: 'target', c: '#C48A1E', desc: 'Roadmap, planning, and QA' },
-];
+export const TEAMS_SEED = [];
