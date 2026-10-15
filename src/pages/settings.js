@@ -258,14 +258,26 @@ export function settingsBody(sec, title) {
       return (
         H('Personal defaults for how you work.') +
         srow(
+          'Client draft wording',
+          'Used when a draft is written from a matter. You still review it before copying.',
+          sel(
+            'voice',
+            [
+              ['plain', 'Plain'],
+              ['professional', 'Professional'],
+            ],
+            P.voice || 'plain',
+          ),
+        ) +
+        srow(
           'Open on launch',
-          'The page you see when Gr8r opens.',
+          'The page you see when the workspace opens.',
           sel(
             'home',
             [
               ['home', 'Home'],
-              ['mytasks', 'My Tasks'],
-              ['inbox', 'Inbox'],
+              ['mytasks', 'My work'],
+              ['projects', 'Matters'],
             ],
             P.home,
           ),

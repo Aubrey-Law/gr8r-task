@@ -1,8 +1,8 @@
 /* ---------- OVERVIEW ---------- */
-import { TODAY, dayBucket, diffD, esc, fmtDate, parse } from '../core/utils.js';
+import { TODAY, ago, dayBucket, diffD, esc, fmtDate, parse } from '../core/utils.js';
 import { ic } from '../core/icons.js';
 import { matterTypeName, stageName, STATUSES } from '../core/constants.js';
-import { D, isOver, mem, pColor, progressOf, task, tasksOf } from '../core/store.js';
+import { D, S, isOver, mem, pColor, progressOf, task, tasksOf } from '../core/store.js';
 import { av, empty, pStatus, practiceNote, stIcon } from '../ui/helpers.js';
 import { sortTasks } from '../shell/view-engine.js';
 import { actHtml, miniRow } from '../components/task-list.js';
@@ -26,6 +26,10 @@ export function projOverview(p) {
     <div class="grid2" style="margin-top:16px">
       <div class="stack">
         <section class="panel"><div class="panel-h"><h2>About</h2><div class="acts"><button class="btn btn-sm btn-ghost" data-a="editProject" data-id="${p.id}">${ic('pencil', 13)}Edit</button></div></div><div class="panel-b" style="font-size:14px;line-height:1.6;color:var(--text)">${esc(p.desc)}</div></section>
+        <section class="panel"><div class="panel-h"><h2>Notes</h2></div><div class="panel-b" style="display:flex;flex-direction:column;gap:10px">
+          <form class="row" data-submit="addMatterNote" data-id="${p.id}" style="gap:8px"><input class="input grow" id="note-in-${p.id}" data-in="matterNote" data-id="${p.id}" value="${esc(S.ui.noteDraft?.[p.id] || '')}" placeholder="Internal note. It stays on this matter." aria-label="New note"><button class="btn btn-secondary btn-sm" data-a="addMatterNote" data-id="${p.id}">Add</button></form>
+          ${(p.notes || []).map(n => `<div class="row" style="align-items:flex-start;gap:8px"><div class="grow"><div style="font-size:13.5px;line-height:1.45">${esc(n.text)}</div><div class="faint" style="font-size:11.5px;margin-top:2px">${ago(n.at)}</div></div><button class="ibtn ibtn-xs" data-a="delMatterNote" data-id="${p.id}" data-nid="${n.id}" aria-label="Remove note">${ic('x', 12)}</button></div>`).join('') || '<span class="faint">No notes yet.</span>'}
+        </div></section>
         ${statusDraftHtml(p)}
         <section class="panel"><div class="panel-h"><h2>Progress</h2><div class="acts"><span class="faint" style="font-size:12px">${ts.filter(t => t.status === 'done').length} of ${ts.length} checklist items done</span></div></div>
           <div class="panel-b">
@@ -46,6 +50,7 @@ export function projOverview(p) {
           ${p.matterType === 'probate' || p.court || p.caseNumber ? `<dt>${ic('gavel', 14)}Court</dt><dd><span class="pillbtn">${esc(p.court || 'Not set')}${p.caseNumber ? ` · ${esc(p.caseNumber)}` : ''}</span></dd>` : ''}
           <dt>${ic('calendar', 14)}Opened</dt><dd><span class="pillbtn num">${fmtDate(p.start, true)}</span></dd>
           <dt>${ic('flag', 14)}Target</dt><dd><span class="pillbtn num">${fmtDate(p.due, true)}</span></dd>
+          <dt>${ic('pin', 14)}Reminder</dt><dd><input class="input" data-in="matterReminder" data-id="${p.id}" value="${esc(p.reminder || '')}" placeholder="Shown on Home" aria-label="Pinned reminder"></dd>
         </dl></div></section>
         <section class="panel"><div class="panel-h"><h2>Milestones</h2></div><div class="panel-b">${
           (p.milestones || [])

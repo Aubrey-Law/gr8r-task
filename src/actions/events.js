@@ -14,7 +14,8 @@ document.addEventListener(
       e.stopPropagation();
       return;
     }
-    const el = e.target.closest('[data-a]');
+    const ctl = e.target.closest('select, textarea, input');
+    const el = ctl && !ctl.dataset.a ? null : e.target.closest('[data-a]');
     const inPop = e.target.closest('[data-pop-root]');
     if (S.ui.pop && !inPop) {
       const trig = el && (el.dataset.a === 'pop' || el.dataset.a === 'ctxBtn' || el.dataset.a === 'addFilter');

@@ -41,6 +41,11 @@ export function pageHome() {
     <div class="ph"><div><h1>${greet}, ${esc(S.prefs.name.split(' ')[0])}</h1><p><span class="num">${WDL[TODAY.getDay()]}, ${MONL[TODAY.getMonth()]} ${TODAY.getDate()}</span> · Here is what needs attention across the practice.</p></div>
       <div class="acts"><button class="btn btn-secondary hide-m" data-a="newProject">${ic('folder-plus', 14)}New matter</button><button class="btn btn-primary" data-a="newTask">${ic('plus', 14)}New task</button></div></div>
     ${practiceNote()}
+    ${(() => {
+      const pins = visibleProjects().filter(p => (p.reminder || '').trim());
+      if (!pins.length) return '';
+      return `<section class="panel" style="margin-top:16px"><div class="panel-h"><h2>Reminders</h2></div>${pins.map(p => `<button class="mini" data-a="go" data-r="project" data-id="${p.id}" data-tab="overview">${pIcon(p, '', 14)}<span class="grow trunc">${esc(p.reminder)}</span><span class="faint trunc">${esc(p.name)}</span></button>`).join('')}</section>`;
+    })()}
     <div class="stats" style="margin:16px 0">
       <button class="stat" data-a="go" data-r="projects"><span class="k">${ic('folder-kanban', 14)}Open matters</span><span class="v">${activeP.length}</span><span class="d">${waiting} waiting</span></button>
       <button class="stat" data-a="goTasks" data-f="open"><span class="k">${ic('circle-dashed', 14)}Open tasks</span><span class="v">${open.length}</span><span class="d">${open.filter(t => t.assignee === D().me).length} on your checklist</span></button>

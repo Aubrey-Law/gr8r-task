@@ -3,7 +3,7 @@ import { TODAY, diffD, iso, parse, uid } from './utils.js';
 import { PCOLORS, TEAMS_SEED } from './constants.js';
 import { seed } from '../data/seed.js';
 
-export const STORE_KEY = 'gr8r.v3';
+export const STORE_KEY = 'gr8r.v4';
 export const DEFAULT_PREFS = {
   theme: 'system',
   accent: 'indigo',
@@ -18,6 +18,7 @@ export const DEFAULT_PREFS = {
   openTasks: 'drawer',
   name: 'Avery Lang',
   title: 'Attorney',
+  voice: 'plain',
 };
 export function load() {
   try {

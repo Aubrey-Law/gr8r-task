@@ -817,7 +817,7 @@ export function handleFiles(files, ctx) {
       if (up.pct >= 100) {
         clearInterval(iv);
         S.ui.uploads = S.ui.uploads.filter(x => x !== up);
-        const rec = { id: uid('f'), name: up.name, type: fileType(up.name), size: up.size, by: D().me, at: Date.now() };
+        const rec = { id: uid('f'), name: up.name, type: fileType(up.name), size: up.size, by: D().me, at: Date.now(), source: 'office', signed: false };
         D().files.unshift({ ...rec, project: up.project, task: up.task || null });
         if (up.task) {
           const t = task(up.task);
@@ -1330,6 +1330,8 @@ export function createProject(f, tmplId) {
     caseNumber: f.caseNumber || '',
     parties: f.parties || [],
     drafts: null,
+    notes: Array.isArray(f.notes) ? f.notes.map(n => ({ ...n, id: uid('mn') })) : [],
+    reminder: f.reminder || '',
     team: f.team || '',
     lead: f.lead,
     due: f.due || dOff(30),
@@ -1412,11 +1414,13 @@ A.submitProject = () => {
 A.draftStatus = el => {
   const p = proj(el.dataset.id);
   if (!p) return;
-  const next = buildDrafts(p);
+  const use = document.getElementById('draft-use-' + p.id)?.value || el.dataset.use || 'status';
+  const next = buildDrafts(p, use);
   mutate(() => {
     p.drafts = { ...next, reviewedAt: null, generatedAt: Date.now() };
   });
-  toast('Drafts written from this matter. Review them before copying.');
+  if (S.ui.route === 'project' && S.ui.params.id === p.id && S.ui.params.tab !== 'overview') go('project', { id: p.id, tab: 'overview' }, { tab: true });
+  toast('Draft written from this matter. Review it before copying.');
 };
 A.markDraftReviewed = el => {
   const p = proj(el.dataset.id);
@@ -1440,13 +1444,48 @@ A.copyDraft = async el => {
     toast('Copy failed. Select the text and copy it yourself.', { kind: 'err' });
   }
 };
-IN.draft = el => {
+IN.matterDraft = el => {
   const p = proj(el.dataset.id);
   if (!p?.drafts) return;
   const which = el.dataset.which === 'client' ? 'client' : 'internal';
   p.drafts[which] = el.value;
   p.drafts.reviewedAt = null;
   save();
+};
+IN.matterReminder = el => {
+  const p = proj(el.dataset.id);
+  if (!p) return;
+  p.reminder = el.value;
+  save();
+};
+IN.matterNote = el => {
+  S.ui.noteDraft = S.ui.noteDraft || {};
+  S.ui.noteDraft[el.dataset.id] = el.value;
+};
+A.addMatterNote = el => {
+  const p = proj(el.dataset.id);
+  const text = (S.ui.noteDraft?.[p?.id] || document.getElementById('note-in-' + p?.id)?.value || '').trim();
+  if (!p || !text) return;
+  mutate(() => {
+    p.notes = p.notes || [];
+    p.notes.unshift({ id: uid('mn'), text, at: Date.now() });
+    if (S.ui.noteDraft) S.ui.noteDraft[p.id] = '';
+  });
+};
+A.delMatterNote = el => {
+  const p = proj(el.dataset.id);
+  if (!p) return;
+  mutate(() => {
+    p.notes = (p.notes || []).filter(n => n.id !== el.dataset.nid);
+  });
+};
+IN.fileMeta = el => {
+  const f = D().files.find(x => x.id === el.dataset.id);
+  if (!f) return;
+  if (el.dataset.f === 'signed') f.signed = el.checked;
+  else f.source = el.value;
+  save();
+  render();
 };
 A.dupProject = el => {
   const p = proj(el.dataset.id);
